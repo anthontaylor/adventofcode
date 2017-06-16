@@ -48,14 +48,13 @@
   (loop [old data
          new []
          compass "N"]
-    (let [point (assign-facing (first old) compass)
-          new-compass (:towards point)]
+    (let [point (-> old first (assign-facing compass))]
       (if (empty? old)
         new
         (recur
          (vec (rest old))
          (conj new point)
-         new-compass)))))
+         (:towards point))))))
 
 (defn- populate-map
   [x]
