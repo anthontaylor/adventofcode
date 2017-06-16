@@ -10,8 +10,8 @@
      (m/abs (- r1 r2))))
 
 (defn- update-coordinates
-  [x y coord]
-  (assoc coord :x (+ x (:x coord)) :y (+ y (:y coord))))
+  [x1 y1 {x2 :x y2 :y :as coord}]
+  (assoc coord :x (+ x1 x2) :y (+ y1 y2)))
 
 (defn- get-direction [{:keys [towards value]} coord]
   (cond
