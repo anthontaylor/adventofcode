@@ -1,6 +1,6 @@
 (ns neato.core-test
   (:require [clojure.test :refer :all]
-            [neato.core :refer :all]))
+            [neato.day1 :refer [calculate]]))
 
 (deftest basic-distance
   (is (= 5 (calculate "R2, L3"))))
