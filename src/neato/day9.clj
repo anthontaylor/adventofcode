@@ -30,9 +30,9 @@
                           nil)]
       (if (empty? remaining-data)
         (if marker
-          (str before add-to-result new)
-          (str add-to-result new))
-        (recur remaining-data (str before add-to-result new))))))
+          (str before new add-to-result)
+          (str new add-to-result))
+        (recur remaining-data (str new before add-to-result))))))
 
 (defn decompressed-length
   [x]
