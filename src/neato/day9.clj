@@ -1,56 +1,42 @@
 (ns neato.day9
   (:require [clojure.string :as s]
             [clojure.walk :as w]
+            [clojure.tools.trace :refer [trace]]
             [clojure.java.io :as io]))
 
-;;ignore markers if within marker territory
-
-;;cut off input as I go through it.
-
-;;Use clojure subs like (subs "Clojure" parsed-length)
-;;                                (subs "Clojure" 1 3)
-
-;;Have two maps. Once that I add to that will be the length count in the end,
-;;and the other which I go through and parse and cut off as I go.
-
-;;parse-section until you find a marker
-;;Get the length and multiple value of that
-;;Cut off the the old map up to that length
-;;Do what you need to do with the section data
-;;and append it to the new map
-
 (defn handle-marker
-  "retrieves a marker string ex:3x3 and returns
-  a map of respective values"
   [x]
-  (as-> x marker
-    (s/split marker #"x")
-    (assoc {} :length-value (Integer. (first marker))
-           :multiple-value (Integer. (last marker)))))
+  (if x
+   (as-> x marker
+     (s/split marker #"x")
+     (assoc {} :length-value (Integer. (first marker))
+            :multiple-value (Integer. (last marker))))
+   (assoc {} :length-value 1 :multiple-value 1)))
 
-
-;;possibly just loop this until there is no more remaining!
 (defn parse-section
-  [x]
-  (let [before (first (s/split x #"\(")) ;;clean all of this shiz!
-        marker (last (re-find  #"\((.*?)\)" x))
-        after (second (s/split x #"\)" 2))
-        length-value (:length-value (handle-marker marker))
-        multiple-value (:multiple-value (handle-marker marker))
-        add-to-result (s/join (repeat multiple-value (subs after 0 length-value)))
-        remaining-map (subs after length-value)]
-    (str
-     " Original: " x
-     " Before: " before
-     " Marker: " marker
-     " After: " after
-     " Length: " length-value
-     " Multiple: " multiple-value
-     " result: " add-to-result
-     " remaining-map: " remaining-map)))
+  [data]
+  (loop [x data
+         new ""]
+    (let [before (first (s/split x #"\("))
+          marker (last (re-find  #"\((.*?)\)" x))
+          after (second (s/split x #"\)" 2))
+          length-value (:length-value (handle-marker marker))
+          multiple-value (:multiple-value (handle-marker marker))
+          add-to-result (if marker
+                          (s/join (repeat multiple-value (subs after 0 length-value)))
+                          x)
+          remaining-data (if marker
+                          (subs after length-value)
+                          nil)]
+      (if (empty? remaining-data)
+        (if marker
+          (str before add-to-result new)
+          (str add-to-result new))
+        (recur remaining-data (str before add-to-result new))))))
 
 (defn decompressed-length
-  [x])
+  [x]
+  (count (parse-section x)))
 
 (defn parse-dataset
   []
@@ -58,4 +44,6 @@
     (-> file
         (io/resource)
         (io/reader)
-        (line-seq))))
+        (line-seq)
+        (first)
+        (decompressed-length))))

@@ -2,7 +2,7 @@
   (:require [neato.day9 :refer :all]
             [clojure.test :refer :all]))
 
-#_(deftest parse-section-test
+(deftest parse-section-test
 
   (testing "basic-length"
     (is (= "ADVENT" (parse-section "ADVENT"))))
@@ -17,7 +17,7 @@
   (testing "2-parse-section"
     (is (= "X(3x3)ABC(3x3)ABCY" (parse-section "X(8x2)(3x3)ABCY")))))
 
-#_(deftest decompressed-length-test
+(deftest decompressed-length-test
 
   (testing "basic-length"
     (is (= 6 (decompressed-length "ADVENT"))))
@@ -28,7 +28,7 @@
   (testing "harder-decompressed-length"
     (is (= 11 (decompressed-length "A(2x2)BCD(2x2)EFG"))))
   (testing "1-decompressed-length"
-    (is (= 5 (decompressed-length "(6x1)(1x3)A"))))
+    (is (= 6 (decompressed-length "(6x1)(1x3)A"))))
   (testing "2-decompressed-length"
     (is (= 18 (decompressed-length "X(8x2)(3x3)ABCY")))))
 
