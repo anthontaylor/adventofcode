@@ -1,7 +1,8 @@
 (ns neato.day1
   (:require [clojure.math.numeric-tower :as m]
             [clojure.tools.trace :refer [trace]]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [clojure.java.io :as io]))
 
 (defn- mh-distance
   [{l1 :x r1 :y} {l2 :x r2 :y}]
@@ -72,3 +73,13 @@
     (populate-facing x)
     (calc-coordinates x)
     (mh-distance {:x 0 :y 0} x)))
+
+(defn parse-dataset
+  []
+  (let [file "day1data.txt"]
+    (-> file
+        (io/resource)
+        (io/reader)
+        (line-seq)
+        (first)
+        (calculate))))
