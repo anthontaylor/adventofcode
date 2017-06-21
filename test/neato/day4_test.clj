@@ -1,5 +1,5 @@
 (ns neato.day4-test
-  (:require [neato.day4 :refer [real-room?]]
+  (:require [neato.day4 :refer [real-room? decrypt-room]]
             [clojure.test :refer :all]))
 
 (deftest decoy
@@ -18,3 +18,10 @@
     (is (= 660 (real-room? {:sector-id "660", :checksum "qhiwf", :encrypted-name "hqcfqwydwfbqijyswhqiihuiuqhsx"}))))
   (testing "middle-tie-off"
     (is (= 0 (real-room? {:sector-id "660", :checksum "qihwf", :encrypted-name "hqcfqwydwfbqijyswhqiihuiuqhsx"})))))
+
+(deftest decrypt-name
+
+  (is (= "very encrypted name"
+         (decrypt-room {:sector-id "343"
+                        :checksum "bllah"
+                        :encrypted-name "qzmt-zixmtkozy-ivhz"}))))

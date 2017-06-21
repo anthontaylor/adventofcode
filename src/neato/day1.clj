@@ -10,7 +10,7 @@
   [from to]
   (let [distance (m/abs (- from to))]
     (if (< to from)
-      (take distance (iterate dec (- from 1)))
+      (take distance (iterate dec (- from 1))) ;;put a dec and inc within the - from 1 instead here
       (take distance (iterate inc (+ from 1))))))
 
 (defn populate-visited
