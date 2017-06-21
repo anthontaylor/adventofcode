@@ -17,15 +17,6 @@
   (testing "2-decompress-one"
     (is (= 18 (decompress-one "X(8x2)(3x3)ABCY")))))
 
-#_(deftest handle-marker-test
-
-  (testing "simple-mark"
-    (is (= {:length 1 :multiple 2} (handle-marker "1x2"))))
-  (testing "med-mark"
-    (is (= {:length 4 :multiple 2} (handle-marker "4x2"))))
-  (testing "longer-mark"
-    (is (= {:length 400 :multiple 232} (handle-marker "400x232")))))
-
 (deftest decompress-two-test
 
   (is (= 6 (decompress-two "ADVENT")))

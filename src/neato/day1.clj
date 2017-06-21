@@ -3,7 +3,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.tools.trace :refer [trace]]
             [clojure.set :as st]
-            [clojure.string :as s]
+            [clojure.string :as string]
             [neato.shared :refer [parse-dataset]]))
 
 (defn- gen-visited
@@ -96,7 +96,7 @@
 (defn calculate
   [data hq1?]
   (as-> data x
-    (s/split x #", ")
+    (string/split x #", ")
     (mapv populate-map x)
     (populate-cardinal-direction x)
     (calc-coordinates x)

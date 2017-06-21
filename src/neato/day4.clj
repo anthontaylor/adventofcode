@@ -1,8 +1,12 @@
 (ns neato.day4
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as st]
             [clojure.walk :as w]
             [clojure.tools.trace :refer [trace]]
             [neato.shared :refer [parse-dataset]]))
+
+(def id-regex #"\d+")
+(def checksum-regex #"\[(.*?)\]")
+(def name-regex #"[^0-9]*")
 
 (defn sort-map
   [coll]
@@ -28,7 +32,7 @@
   [{e :encrypted-name c :checksum id :sector-id}]
   (if (->> (parse-checksum e c)
            (mapv #(-> % first name))
-           (s/join "")
+           (st/join "")
            (compare c)
            (= 0))
     (Integer. id)
@@ -37,9 +41,9 @@
 (defn parse-string
   [x]
   (-> {}
-      (assoc :sector-id (re-find  #"\d+" x))
-      (assoc :checksum (last (re-find  #"\[(.*?)\]" x)))
-      (assoc :encrypted-name (s/replace (re-find  #"[^0-9]*" x) #"-" ""))))
+      (assoc :sector-id (re-find id-regex x))
+      (assoc :checksum (last (re-find checksum-regex x)))
+      (assoc :encrypted-name (st/replace (re-find name-regex x) #"-" ""))))
 
 (defn sum-of-IDs
   [coll]
@@ -63,7 +67,7 @@
                  "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"]]
       (assoc {} :name (->> chars
                            (mapv #(decrypt % shift alpha))
-                           (s/join ""))
+                           (st/join ""))
                 :sector-id id))
     nil))
 
