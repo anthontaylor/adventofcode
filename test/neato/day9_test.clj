@@ -2,51 +2,39 @@
   (:require [neato.day9 :refer :all]
             [clojure.test :refer :all]))
 
-(deftest parse-section-test
+(deftest decompress-one-test
 
   (testing "basic-length"
-    (is (= "ADVENT" (parse-section "ADVENT"))))
-  (testing "basic-parse-section"
-    (is (= "ABBBBBC" (parse-section "A(1x5)BC"))))
-  (testing "med-parse-section"
-    (is (= "XYZXYZXYZ" (parse-section "(3x3)XYZ"))))
-  (testing "harder-parse-section"
-    (is (= "ABCBCDEFEFG" (parse-section "A(2x2)BCD(2x2)EFG"))))
-  (testing "1-parse-section"
-    (is (= "(1x3)A" (parse-section "(6x1)(1x3)A"))))
-  (testing "2-parse-section"
-    (is (= "X(3x3)ABC(3x3)ABCY" (parse-section "X(8x2)(3x3)ABCY")))))
+    (is (= 6 (decompress-one "ADVENT"))))
+  (testing "basic-decompress-one"
+    (is (= 7 (decompress-one "A(1x5)BC"))))
+  (testing "med-decompress-one"
+    (is (= 9 (decompress-one "(3x3)XYZ"))))
+  (testing "harder-decompress-one"
+    (is (= 11 (decompress-one "A(2x2)BCD(2x2)EFG"))))
+  (testing "1-decompress-one"
+    (is (= 6 (decompress-one "(6x1)(1x3)A"))))
+  (testing "2-decompress-one"
+    (is (= 18 (decompress-one "X(8x2)(3x3)ABCY")))))
 
-(deftest decompressed-length-test
-
-  (testing "basic-length"
-    (is (= 6 (decompressed-length "ADVENT"))))
-  (testing "basic-decompressed-length"
-    (is (= 7 (decompressed-length "A(1x5)BC"))))
-  (testing "med-decompressed-length"
-    (is (= 9 (decompressed-length "(3x3)XYZ"))))
-  (testing "harder-decompressed-length"
-    (is (= 11 (decompressed-length "A(2x2)BCD(2x2)EFG"))))
-  (testing "1-decompressed-length"
-    (is (= 6 (decompressed-length "(6x1)(1x3)A"))))
-  (testing "2-decompressed-length"
-    (is (= 18 (decompressed-length "X(8x2)(3x3)ABCY")))))
-
-(deftest parse-marker-test
+(deftest handle-marker-test
 
   (testing "simple-mark"
-    (is (= {:length-value 1 :multiple-value 2} (handle-marker "1x2"))))
+    (is (= {:length 1 :multiple 2} (handle-marker "1x2"))))
   (testing "med-mark"
-    (is (= {:length-value 4 :multiple-value 2} (handle-marker "4x2"))))
+    (is (= {:length 4 :multiple 2} (handle-marker "4x2"))))
   (testing "longer-mark"
-    (is (= {:length-value 400 :multiple-value 232} (handle-marker "400x232")))))
+    (is (= {:length 400 :multiple 232} (handle-marker "400x232")))))
 
+(deftest decompress-two-test
 
-(deftest part-2
+  (is (= 6 (decompress-two "ADVENT")))
+  (is (= 7 (decompress-two "A(1x5)BC")))
+  (is (= 9 (decompress-two "(3x3)XYZ")))
+  (is (= 20 (decompress-two "X(8x2)(3x3)ABCY")))
+  (is (= 241920 (decompress-two "(27x12)(20x12)(13x14)(7x10)(1x12)A")))
+  (is (= 445 (decompress-two "(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"))))
 
-  (is (= 6 (decompressed-length-two "ADVENT")))
-  (is (= 7 (decompressed-length-two "A(1x5)BC")))
-  (is (= 9 (decompressed-length-two "(3x3)XYZ")))
-  (is (= 20 (decompressed-length-two "X(8x2)(3x3)ABCY")))
-  (is (= 241920 (decompressed-length-two "(27x12)(20x12)(13x14)(7x10)(1x12)A")))
-  (is (= 445 (decompressed-length-two "X(8x2)(3x3)ABCY"))))
+(deftest data
+
+  (is (= 74532 (decompressed-length-one))))

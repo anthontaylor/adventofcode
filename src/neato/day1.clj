@@ -4,50 +4,50 @@
             [clojure.tools.trace :refer [trace]]
             [clojure.set :as st]
             [clojure.string :as s]
-            [clojure.java.io :as io]))
+            [neato.shared :refer [parse-dataset]]))
 
-(defn gen-values
+(defn- gen-visited
   [from to]
   (let [distance (m/abs (- from to))]
     (if (< to from)
-      (take distance (iterate dec (- from 1))) ;;put a dec and inc within the - from 1 instead here
-      (take distance (iterate inc (+ from 1))))))
+      (take distance (iterate dec (dec from)))
+      (take distance (iterate inc (inc from))))))
 
 (defn populate-visited
-  [{oldx :x oldy :y} {newx :x newy :y}]
-  (let [x-dist (- oldx newx)
-        y-dist (- oldy newy)
-        x-values (gen-values oldx newx)
-        y-values (gen-values oldy newy)]
-    (if (not= oldx newx)
-      (into #{} (map #(conj {:x % :y oldy}) x-values))
-      (into #{} (map #(conj {:x oldx :y %}) y-values)))))
+  [{old-x :x old-y :y} {new-x :x new-y :y}]
+  (let [x-dist (- old-x new-x)
+        y-dist (- old-y new-y)
+        x-values (gen-visited old-x new-x)
+        y-values (gen-visited old-y new-y)]
+    (if (not= old-x new-x)
+      (into #{} (map #(conj {:x % :y old-y}) x-values))
+      (into #{} (map #(conj {:x old-x :y %}) y-values)))))
 
-(defn- mh-distance
+(defn- manhattan-distance
   [{l1 :x r1 :y} {l2 :x r2 :y}]
   (+ (m/abs (- l1 l2))
      (m/abs (- r1 r2))))
 
-(defn- update-coordinates
+(defn- add-to-coordinates
   [x1 y1 {x2 :x y2 :y total-visited :visited :as coord}]
   (let [new-visited (populate-visited {:x x2 :y y2} {:x (+ x1 x2) :y (+ y1 y2)})
-        visited (st/union new-visited total-visited)]
-
-    #_(trace "total-visited" total-visited)
+        visited (st/union new-visited total-visited)
+        new-x (+ x1 x2)
+        new-y (+ y1 y2)]
     (if-let [hq (some new-visited total-visited)]
-      (if (empty? (:new-hq coord))
-        (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited :new-hq hq)
-        (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited))
-      (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited))))
+      (if (empty? (:hq2 coord))
+        (assoc coord :x new-x :y new-y :visited visited :hq2 hq)
+        (assoc coord :x new-x :y new-y :visited visited))
+      (assoc coord :x new-x :y new-y :visited visited))))
 
 (defn- get-direction [{:keys [towards value]} coord]
   (cond
-    (= towards "N") (update-coordinates 0 (+ value) coord)
-    (= towards "E") (update-coordinates (+ value) 0 coord)
-    (= towards "S") (update-coordinates 0 (- value) coord)
-    (= towards "W") (update-coordinates (- value) 0 coord)
+    (= towards "N") (add-to-coordinates 0 (+ value) coord)
+    (= towards "E") (add-to-coordinates (+ value) 0 coord)
+    (= towards "S") (add-to-coordinates 0 (- value) coord)
+    (= towards "W") (add-to-coordinates (- value) 0 coord)
     :else
-    "Coordinates Wrong!"))
+    "get-direction issue"))
 
 (defn calc-coordinates [data]
   (loop [old data
@@ -58,7 +58,7 @@
        (vec (rest old))
        (get-direction (first old) coordinates)))))
 
-(defn assign-facing [{:keys [direction value] :as data} facing]
+(defn- assign-cardinal-direction [{:keys [direction value] :as data} facing]
   (cond
     (and (= direction "R")(= facing "N")) (assoc data :towards "E")
     (and (= direction "L")(= facing "N")) (assoc data :towards "W")
@@ -69,13 +69,13 @@
     (and (= direction "R")(= facing "W")) (assoc data :towards "N")
     (and (= direction "L")(= facing "W")) (assoc data :towards "S")
     :else
-    (assoc data :towards "Something went wrong!")))
+    "assign-cardinal-direction issue"))
 
-(defn populate-facing [data]
+(defn- populate-cardinal-direction [data]
   (loop [old data
          new []
          compass "N"]
-    (let [point (-> old first (assign-facing compass))]
+    (let [point (-> old first (assign-cardinal-direction compass))]
       (if (empty? old)
         new
         (recur
@@ -93,21 +93,28 @@
       (assoc point :direction d :value v))))
 
 (defn calculate
-  [data]
+  [data hq1?]
   (as-> data x
     (s/split x #", ")
     (mapv populate-map x)
-    (populate-facing x)
+    (populate-cardinal-direction x)
     (calc-coordinates x)
-    (str "First Headquarters: "(mh-distance {:x 0 :y 0} x) " Second Headquarters: "
-         (mh-distance {:x 0 :y 0} (:new-hq x))))) ;;fix testing since second headquarters could be nil
+    (if hq1?
+      (manhattan-distance {:x 0 :y 0} x)
+      (manhattan-distance {:x 0 :y 0} (:hq2 x)))))
 
-(defn parse-dataset
+(defn headquarters-two
   []
   (let [file "day1data.txt"]
     (-> file
-        (io/resource)
-        (io/reader)
-        (line-seq)
-        (first)
-        (calculate))))
+        parse-dataset
+        first
+        (calculate false))))
+
+(defn headquarters-one
+  []
+  (let [file "day1data.txt"]
+    (-> file
+        parse-dataset
+        first
+        (calculate true))))
