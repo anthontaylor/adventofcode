@@ -1,17 +1,19 @@
 (ns neato.day9
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as st]
             [clojure.walk :as w]
             [clojure.tools.trace :refer [trace]]
             [neato.shared :refer [parse-dataset]]))
 
+(def marker-regex #"\((.*?)\)")
+
 (defn handle-marker
   [data]
-  (let [before (first (s/split data #"\("))
-        marker (last (re-find  #"\((.*?)\)" data))
-        after (second (s/split data #"\)" 2))
+  (let [before (first (st/split data #"\("))
+        marker (last (re-find marker-regex data))
+        after (second (st/split data #"\)" 2))
         vals {}]
     (if marker
-      (let [values (s/split marker #"x")
+      (let [values (st/split marker #"x")
             length (Integer. (first values))
             multiple (Integer. (last values))]
         (assoc vals :length length :multiple multiple :before before :after after :marker marker))
@@ -26,7 +28,7 @@
 (defn needs-parsing
   [data {:keys [after length multiple marker]}]
   (if marker
-    (s/join (repeat multiple (subs after 0 length)))
+    (st/join (repeat multiple (subs after 0 length)))
     data))
 
 (defn decompress-one
@@ -42,7 +44,7 @@
           (count (str new add-to-result)))
         (recur
          leftover
-         (s/join [new (:before values) add-to-result]))))))
+         (st/join [new (:before values) add-to-result]))))))
 
 (defn decompress-two
   [x]
@@ -52,9 +54,9 @@
           needs-parsing (needs-parsing data values)
           leftover (leftovers values)]
       (if (:marker values)
-        (recur (s/join [needs-parsing leftover])
+        (recur (st/join [needs-parsing leftover])
                (+ counter (count (:before values))))
-        (+ counter (count (s/join [needs-parsing leftover])))))))
+        (+ counter (count (st/join [needs-parsing leftover])))))))
 
 (defn decompressed-length-one
   []
