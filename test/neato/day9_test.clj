@@ -40,3 +40,13 @@
     (is (= {:length-value 4 :multiple-value 2} (handle-marker "4x2"))))
   (testing "longer-mark"
     (is (= {:length-value 400 :multiple-value 232} (handle-marker "400x232")))))
+
+
+(deftest part-2
+
+  (is (= 6 (decompressed-length-two "ADVENT")))
+  (is (= 7 (decompressed-length-two "A(1x5)BC")))
+  (is (= 9 (decompressed-length-two "(3x3)XYZ")))
+  (is (= 20 (decompressed-length-two "X(8x2)(3x3)ABCY")))
+  (is (= 241920 (decompressed-length-two "(27x12)(20x12)(13x14)(7x10)(1x12)A")))
+  (is (= 445 (decompressed-length-two "X(8x2)(3x3)ABCY"))))
