@@ -1,8 +1,27 @@
 (ns neato.day1
   (:require [clojure.math.numeric-tower :as m]
+            [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.tools.trace :refer [trace]]
+            [clojure.set :as st]
             [clojure.string :as s]
             [clojure.java.io :as io]))
+
+(defn gen-values
+  [from to]
+  (let [distance (m/abs (- from to))]
+    (if (< to from)
+      (take distance (iterate dec (- from 1)))
+      (take distance (iterate inc (+ from 1))))))
+
+(defn populate-visited
+  [{oldx :x oldy :y} {newx :x newy :y}]
+  (let [x-dist (- oldx newx)
+        y-dist (- oldy newy)
+        x-values (gen-values oldx newx)
+        y-values (gen-values oldy newy)]
+    (if (not= oldx newx)
+      (into #{} (map #(conj {:x % :y oldy}) x-values))
+      (into #{} (map #(conj {:x oldx :y %}) y-values)))))
 
 (defn- mh-distance
   [{l1 :x r1 :y} {l2 :x r2 :y}]
@@ -10,8 +29,16 @@
      (m/abs (- r1 r2))))
 
 (defn- update-coordinates
-  [x1 y1 {x2 :x y2 :y :as coord}]
-  (assoc coord :x (+ x1 x2) :y (+ y1 y2)))
+  [x1 y1 {x2 :x y2 :y total-visited :visited :as coord}]
+  (let [new-visited (populate-visited {:x x2 :y y2} {:x (+ x1 x2) :y (+ y1 y2)})
+        visited (st/union new-visited total-visited)]
+
+    #_(trace "total-visited" total-visited)
+    (if-let [hq (some new-visited total-visited)]
+      (if (empty? (:new-hq coord))
+        (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited :new-hq hq)
+        (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited))
+      (assoc coord :x (+ x1 x2) :y (+ y1 y2) :visited visited))))
 
 (defn- get-direction [{:keys [towards value]} coord]
   (cond
@@ -24,7 +51,7 @@
 
 (defn calc-coordinates [data]
   (loop [old data
-         coordinates {:x 0 :y 0}]
+         coordinates {:x 0 :y 0 :visited #{}}]
     (if (empty? old)
       coordinates
       (recur
@@ -72,7 +99,8 @@
     (mapv populate-map x)
     (populate-facing x)
     (calc-coordinates x)
-    (mh-distance {:x 0 :y 0} x)))
+    (str "First Headquarters: "(mh-distance {:x 0 :y 0} x) " Second Headquarters: "
+         (mh-distance {:x 0 :y 0} (:new-hq x))))) ;;fix testing since second headquarters could be nil
 
 (defn parse-dataset
   []
