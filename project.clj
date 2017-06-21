@@ -7,7 +7,7 @@
                  [org.clojure/tools.trace "0.7.9"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/math.combinatorics "0.1.4"]
-                 [org.clojure/data.priority-map "0.0.7"]]
+                 [org.clojure/clojure "1.9.0-alpha16"]]
   :main ^:skip-aot neato.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

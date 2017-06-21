@@ -7,4 +7,4 @@
 (defn -main
   "Run Code"
   [& args]
-  (println "Hello World!"))
+  (println (str (day9/decompressed-length-two))))

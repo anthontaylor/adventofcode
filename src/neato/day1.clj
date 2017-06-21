@@ -30,15 +30,16 @@
 
 (defn- add-to-coordinates
   [x1 y1 {x2 :x y2 :y total-visited :visited :as coord}]
-  (let [new-visited (populate-visited {:x x2 :y y2} {:x (+ x1 x2) :y (+ y1 y2)})
+  (let [new-x (+ x1 x2)
+        new-y (+ y1 y2)
+        new-visited (populate-visited {:x x2 :y y2} {:x new-x :y new-y})
         visited (st/union new-visited total-visited)
-        new-x (+ x1 x2)
-        new-y (+ y1 y2)]
+        coord (assoc coord :x new-x :y new-y :visited visited)]
     (if-let [hq (some new-visited total-visited)]
       (if (empty? (:hq2 coord))
-        (assoc coord :x new-x :y new-y :visited visited :hq2 hq)
-        (assoc coord :x new-x :y new-y :visited visited))
-      (assoc coord :x new-x :y new-y :visited visited))))
+        (assoc coord :hq2 hq)
+        coord)
+      coord)))
 
 (defn- get-direction [{:keys [towards value]} coord]
   (cond
