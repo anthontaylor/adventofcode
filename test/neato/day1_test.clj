@@ -1,6 +1,6 @@
 (ns neato.day1-test
   (:require [clojure.test :refer :all]
-            [neato.day1 :refer [calculate populate-visited]]
+            [neato.day1 :refer [find-distance-to-hq populate-visited]]
             [neato.shared :refer [parse-dataset]]))
 
 (defn headquarters-two
@@ -9,7 +9,7 @@
     (->> file
         parse-dataset
         first
-        (calculate false))))
+        (find-distance-to-hq false))))
 
 (defn headquarters-one
   []
@@ -17,18 +17,18 @@
     (->> file
         parse-dataset
         first
-        (calculate true))))
+        (find-distance-to-hq true))))
 
 (deftest easter-bunny-hq
 
   (testing "basic-distance"
-    (is (= 5 (calculate true "R2, L3"))))
+    (is (= 5 (find-distance-to-hq true "R2, L3"))))
   (testing "turn-distance"
-    (is (= 2 (calculate true "R2, R2, R2"))))
+    (is (= 2 (find-distance-to-hq true "R2, R2, R2"))))
   (testing "med-distance"
-    (is (= 12 (calculate true "R5, L5, R5, R3"))))
+    (is (= 12 (find-distance-to-hq true "R5, L5, R5, R3"))))
   (testing "nowhere"
-    (is (= 0 (calculate true "R2, R2, R2, R2"))))
+    (is (= 0 (find-distance-to-hq true "R2, R2, R2, R2"))))
   (testing "Headquarters 1"
     (is (= 278 (headquarters-one))))
   (testing "Headquarters 2"
