@@ -3,8 +3,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.tools.trace :refer [trace]]
             [clojure.set :as st]
-            [clojure.string :as string]
-            [neato.shared :refer [parse-dataset]]))
+            [clojure.string :as string]))
 
 (defn- gen-visited
   [from to]
@@ -28,7 +27,7 @@
   (+ (m/abs (- l1 l2))
      (m/abs (- r1 r2))))
 
-(defn- add-to-coordinates
+(defn- add-path-history
   [x1 y1 {x2 :x y2 :y total-visited :visited :as coord}]
   (let [new-x (+ x1 x2)
         new-y (+ y1 y2)
@@ -43,12 +42,12 @@
 
 (defn- get-direction [{:keys [towards value]} coord]
   (cond
-    (= towards "N") (add-to-coordinates 0 (+ value) coord)
-    (= towards "E") (add-to-coordinates (+ value) 0 coord)
-    (= towards "S") (add-to-coordinates 0 (- value) coord)
-    (= towards "W") (add-to-coordinates (- value) 0 coord)
+    (= towards "N") (add-path-history 0 (+ value) coord)
+    (= towards "E") (add-path-history (+ value) 0 coord)
+    (= towards "S") (add-path-history 0 (- value) coord)
+    (= towards "W") (add-path-history (- value) 0 coord)
     :else
-    "get-direction issue"))
+    (throw (Exception. "Error when getting direction"))))
 
 (defn calc-coordinates [data]
   (loop [old data
@@ -68,9 +67,7 @@
     (and (= direction "R")(= facing "S")) (assoc data :towards "W")
     (and (= direction "L")(= facing "S")) (assoc data :towards "E")
     (and (= direction "R")(= facing "W")) (assoc data :towards "N")
-    (and (= direction "L")(= facing "W")) (assoc data :towards "S")
-    :else
-    "assign-cardinal-direction issue"))
+    (and (= direction "L")(= facing "W")) (assoc data :towards "S")))
 
 (defn- populate-cardinal-direction [data]
   (loop [old data
@@ -84,38 +81,22 @@
          (conj new point)
          (:towards point))))))
 
-(defn- populate-map
+(defn- parse-instructions
   [x]
   (let [d (-> x first str)
-        v (->> x (re-find  #"\d+") Integer.)
-        point {}]
-    (if (= "L" d)
-      (assoc point :direction d :value v)
-      (assoc point :direction d :value v))))
+        v (-> x (.substring 1) read-string)]
+    {:direction d :value v}))
 
-(defn calculate
-  [data hq1?]
-  (as-> data x
-    (string/split x #", ")
-    (mapv populate-map x)
-    (populate-cardinal-direction x)
-    (calc-coordinates x)
-    (if hq1?
-      (manhattan-distance {:x 0 :y 0} x)
-      (manhattan-distance {:x 0 :y 0} (:hq2 x)))))
+(defn get-manhattan-distance
+  [hq1? x]
+  (if hq1?
+    (manhattan-distance {:x 0 :y 0} x)
+    (manhattan-distance {:x 0 :y 0} (:hq2 x))))
 
-(defn headquarters-two
-  []
-  (let [file "day1data.txt"]
-    (-> file
-        parse-dataset
-        first
-        (calculate false))))
-
-(defn headquarters-one
-  []
-  (let [file "day1data.txt"]
-    (-> file
-        parse-dataset
-        first
-        (calculate true))))
+(defn find-distance-to-hq
+  [hq1? x]
+  (->> (string/split x #", ")
+    (mapv parse-instructions)
+    populate-cardinal-direction
+    calc-coordinates
+    (get-manhattan-distance hq1?)))

@@ -4,10 +4,6 @@
             [clojure.tools.trace :refer [trace]]
             [neato.shared :refer [parse-dataset]]))
 
-(def id-regex #"\d+")
-(def checksum-regex #"\[(.*?)\]")
-(def name-regex #"[^0-9]*")
-
 (defn sort-map
   [coll]
   (into (sorted-map-by
@@ -23,12 +19,14 @@
 (defn parse-checksum
   [encrypted-name checksum]
   (->> encrypted-name
-    (frequencies)
-    (keywordize-map)
-    (sort-map)
-    (take (count checksum))))
+       frequencies
+       keywordize-map
+       sort-map
+       (take (count checksum))))
 
-(defn real?
+;; `sum-of-ids` could be `(filter is-real?) (map :sector-id) (reduce +)` to describe better your intention and what's going on....
+
+(defn retrieve-real-room-checksums
   [{e :encrypted-name c :checksum id :sector-id}]
   (if (->> (parse-checksum e c)
            (mapv #(-> % first name))
@@ -38,17 +36,19 @@
     (Integer. id)
     0))
 
-(defn parse-string
+(defn string->room
   [x]
-  (-> {}
-      (assoc :sector-id (re-find id-regex x))
-      (assoc :checksum (last (re-find checksum-regex x)))
-      (assoc :encrypted-name (st/replace (re-find name-regex x) #"-" ""))))
+  (let [id-regex  #"\d+"
+        checksum-regex #"\[(.*?)\]"
+        name-regex #"[^0-9]*"]
+    {:sector-id (re-find id-regex x)
+     :checksum (last (re-find checksum-regex x))
+     :encrypted-name (st/replace (re-find name-regex x) #"-" "")}))
 
 (defn sum-of-IDs
   [coll]
   (->> coll
-   (mapv real?)
+   (mapv retrieve-real-room-checksums)
    (reduce +)))
 
 (defn decrypt
@@ -60,7 +60,7 @@
 
 (defn decrypt-room
   [{e :encrypted-name id :sector-id :as room}]
-  (if (not= 0 (real? room))
+  (if (not= 0 (retrieve-real-room-checksums room))
     (let [shift (mod (Integer. id) 26)
           chars (vec (seq e))
           alpha ["a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
@@ -74,12 +74,11 @@
 (defn decoy-two
   []
   (->> (parse-dataset "day4data.txt")
-       (mapv parse-string)
-       (mapv decrypt-room)
+       (mapv (comp string->room decrypt-room))
        (remove nil?)))
 
 (defn decoy-one
   []
   (->> (parse-dataset "day4data.txt")
-       (mapv parse-string)
+       (mapv string->room)
        (sum-of-IDs)))

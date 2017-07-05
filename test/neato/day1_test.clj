@@ -1,18 +1,34 @@
 (ns neato.day1-test
   (:require [clojure.test :refer :all]
-            [neato.day1 :refer [calculate populate-visited
-                                headquarters-two headquarters-one]]))
+            [neato.day1 :refer [calculate populate-visited]]
+            [neato.shared :refer [parse-dataset]]))
+
+(defn headquarters-two
+  []
+  (let [file "day1data.txt"]
+    (->> file
+        parse-dataset
+        first
+        (calculate false))))
+
+(defn headquarters-one
+  []
+  (let [file "day1data.txt"]
+    (->> file
+        parse-dataset
+        first
+        (calculate true))))
 
 (deftest easter-bunny-hq
 
   (testing "basic-distance"
-    (is (= 5 (calculate "R2, L3" true))))
+    (is (= 5 (calculate true "R2, L3"))))
   (testing "turn-distance"
-    (is (= 2 (calculate "R2, R2, R2" true))))
+    (is (= 2 (calculate true "R2, R2, R2"))))
   (testing "med-distance"
-    (is (= 12 (calculate "R5, L5, R5, R3" true))))
+    (is (= 12 (calculate true "R5, L5, R5, R3"))))
   (testing "nowhere"
-    (is (= 0 (calculate "R2, R2, R2, R2" true))))
+    (is (= 0 (calculate true "R2, R2, R2, R2"))))
   (testing "Headquarters 1"
     (is (= 278 (headquarters-one))))
   (testing "Headquarters 2"
