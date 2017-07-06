@@ -4,6 +4,17 @@
             [debux.core :as dd]
             [clojure.string :as string]))
 
+(defn- manhattan-distance
+  [{l1 :x r1 :y} {l2 :x r2 :y}]
+  (+ (m/abs (- l1 l2))
+     (m/abs (- r1 r2))))
+
+(defn- get-manhattan-distance
+  [hq1? x]
+  (if hq1?
+    (manhattan-distance {:x 0 :y 0} x)
+    (manhattan-distance {:x 0 :y 0} (:hq2 x))))
+
 (defn- gen-visited
   [from to]
   (let [distance (m/abs (- from to))
@@ -21,11 +32,6 @@
     (if (not= old-x new-x)
       (set (map #(conj {:x % :y old-y}) x-values))
       (set (map #(conj {:x old-x :y %}) y-values)))))
-
-(defn- manhattan-distance
-  [{l1 :x r1 :y} {l2 :x r2 :y}]
-  (+ (m/abs (- l1 l2))
-     (m/abs (- r1 r2))))
 
 (defn- add-path-history
   [[x1 y1] {x2 :x y2 :y total-visited :visited :as coord}]
@@ -74,12 +80,6 @@
   (let [d (first x)
         v (-> x (.substring 1) read-string)]
     {:direction d :value v}))
-
-(defn- get-manhattan-distance
-  [hq1? x]
-  (if hq1?
-    (manhattan-distance {:x 0 :y 0} x)
-    (manhattan-distance {:x 0 :y 0} (:hq2 x))))
 
 (defn find-distance-to-hq
   [hq1? x]

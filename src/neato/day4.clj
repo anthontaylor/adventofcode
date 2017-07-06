@@ -17,16 +17,6 @@
    (into {} (for [[k v] coll]
               [(str k) v]))))
 
-;; Sometimes is a bit more clear when you combine small functions very well known:
-;; (->> room-name
-;;      frequencies
-;;      (map (comp vec reverse))
-;;      (sort-by identity descendant-order)
-;;      (take 5)
-;;      (map last)
-;;      (apply str)
-;;      (= checksum)))
-
 (defn parse-checksum
   [encrypted-name checksum]
   (->> encrypted-name
@@ -71,8 +61,7 @@
   (when (not= 0 (is-real? room))
     (let [shift (mod (Integer. id) 26)
           chars (vec (seq e))
-          alpha ["a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
-                 "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"]]
+          alpha (map #(str (char %)) (range 97 123))]
       {:name (->> chars (map #(decrypt % shift alpha)) (st/join "")) :sector-id id})))
 
 (defn decoy-two
