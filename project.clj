@@ -7,7 +7,9 @@
                  [org.clojure/tools.trace "0.7.9"]
                  [org.clojure/math.numeric-tower "0.0.4"]
                  [org.clojure/math.combinatorics "0.1.4"]
-                 [aprint "0.1.3"]]
+                 [aprint "0.1.3"]
+                 [philoskim/debux "0.3.4"]
+                 [walmartlabs/datascope "0.1.1"]]
   :main ^:skip-aot neato.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

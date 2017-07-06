@@ -2,7 +2,8 @@
   (:require [clojure.string :as st]
             [clojure.walk :as w]
             [clojure.tools.trace :refer [trace]]
-            [neato.shared :refer [parse-dataset]]))
+            [neato.shared :refer [parse-dataset]]
+            [com.walmartlabs.datascope :as ds]))
 
 (defn sort-map
   [coll]

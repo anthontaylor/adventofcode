@@ -3,6 +3,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.tools.trace :refer [trace]]
             [clojure.set :as st]
+            [debux.core :as dd]
             [clojure.string :as string]))
 
 (defn- gen-visited
@@ -19,8 +20,8 @@
         x-values (gen-visited old-x new-x)
         y-values (gen-visited old-y new-y)]
     (if (not= old-x new-x)
-      (into #{} (map #(conj {:x % :y old-y}) x-values))
-      (into #{} (map #(conj {:x old-x :y %}) y-values)))))
+      (set (map #(conj {:x % :y old-y}) x-values))
+      (set (map #(conj {:x old-x :y %}) y-values)))))
 
 (defn- manhattan-distance
   [{l1 :x r1 :y} {l2 :x r2 :y}]
@@ -40,7 +41,7 @@
         coord)
       coord)))
 
-(defn- get-direction [{:keys [towards value]} coord]
+(defn- get-direction [coord {:keys [towards value]}]
   (cond
     (= towards "N") (add-path-history 0 (+ value) coord)
     (= towards "E") (add-path-history (+ value) 0 coord)
@@ -49,37 +50,22 @@
     :else
     (throw (Exception. "Error when getting direction"))))
 
-(defn calc-coordinates [data]
-  (loop [old data
-         coordinates {:x 0 :y 0 :visited #{}}]
-    (if (empty? old)
-      coordinates
-      (recur
-       (vec (rest old))
-       (get-direction (first old) coordinates)))))
-
-(defn- assign-cardinal-direction [{:keys [direction value] :as data} facing]
+(defn- assign-cardinal-direction [compass {:keys [direction value] :as data}]
   (cond
-    (and (= direction "R")(= facing "N")) (assoc data :towards "E")
-    (and (= direction "L")(= facing "N")) (assoc data :towards "W")
-    (and (= direction "R")(= facing "E")) (assoc data :towards "S")
-    (and (= direction "L")(= facing "E")) (assoc data :towards "N")
-    (and (= direction "R")(= facing "S")) (assoc data :towards "W")
-    (and (= direction "L")(= facing "S")) (assoc data :towards "E")
-    (and (= direction "R")(= facing "W")) (assoc data :towards "N")
-    (and (= direction "L")(= facing "W")) (assoc data :towards "S")))
+    (and (= direction "R")(= compass "N")) (assoc data :towards "E")
+    (and (= direction "L")(= compass "N")) (assoc data :towards "W")
+    (and (= direction "R")(= compass "E")) (assoc data :towards "S")
+    (and (= direction "L")(= compass "E")) (assoc data :towards "N")
+    (and (= direction "R")(= compass "S")) (assoc data :towards "W")
+    (and (= direction "L")(= compass "S")) (assoc data :towards "E")
+    (and (= direction "R")(= compass "W")) (assoc data :towards "N")
+    (and (= direction "L")(= compass "W")) (assoc data :towards "S")
+    (and (= direction "R")(= compass nil)) (assoc data :towards "E")
+    (and (= direction "L")(= compass nil)) (assoc data :towards "W")))
 
-(defn- populate-cardinal-direction [data]
-  (loop [old data
-         new []
-         compass "N"]
-    (let [point (-> old first (assign-cardinal-direction compass))]
-      (if (empty? old)
-        new
-        (recur
-         (vec (rest old))
-         (conj new point)
-         (:towards point))))))
+(defn- populate-cardinal-direction [new data]
+  (let [compass (:towards (last new))]
+    (conj new (assign-cardinal-direction compass data))))
 
 (defn- parse-instructions
   [x]
@@ -95,8 +81,9 @@
 
 (defn find-distance-to-hq
   [hq1? x]
-  (->> (string/split x #", ")
-    (mapv parse-instructions)
-    populate-cardinal-direction
-    calc-coordinates
-    (get-manhattan-distance hq1?)))
+  (let [coordinates  {:x 0 :y 0 :visited #{}}]
+    (->> (string/split x #", ")
+         (mapv parse-instructions)
+         (reduce populate-cardinal-direction [])
+         (reduce get-direction coordinates)
+         (get-manhattan-distance hq1?))))
